@@ -202,11 +202,8 @@ export function CompanyJobs() {
             <h1 className="text-2xl font-bold">Vagas da Empresa</h1>
             <div className="flex items-center gap-4">
               <Badge variant="outline" className="text-lg">
-                {jobs?.totalElements || 0} Vagas
+                {jobs?.totalElements || 0} Vagas anúnciadas
               </Badge>
-              <Button variant="default" className="bg-green-600 hover:bg-green-700 text-white">
-                Nova Vaga
-              </Button>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

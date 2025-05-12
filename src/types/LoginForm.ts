@@ -5,4 +5,5 @@ export interface LoginFormProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   user: User;
+  isLoading?: boolean;
 }

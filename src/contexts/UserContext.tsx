@@ -39,6 +39,7 @@ type UserContextType = {
   setIsLogged: Dispatch<SetStateAction<boolean>>;
   logout: () => void;
   isAuthorized: (allowedRoles: SimpleUserType["role"][]) => boolean;
+  updateUserData: (user: SimpleUserType) => void;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -60,6 +61,11 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
     setSimpleUserJson(null);
     setIsLogged(false);
     setIsInitialized(false);
+  };
+
+  const updateUserData = (user: SimpleUserType) => {
+    setSimpleUserJson(user);
+    localStorage.setItem("@User", JSON.stringify(user));
   };
 
   const isAuthorized = (allowedRoles: SimpleUserType["role"][]) => {
@@ -85,7 +91,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isLoadingUserData,
     isFetching,
     refetch: refetchUserData,
-  } = useQuery<UserDetails, Error>({
+  } = useQuery<UserDetails>({
     queryKey: ["userInfo", simpleUserJson?.id],
     queryFn: async () => {
       if (!simpleUserJson) {
@@ -105,16 +111,8 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
     gcTime: 0,
     staleTime: 0,
     retry: 1,
-    onError: (error) => {
-      console.error("Error fetching user data:", error);
-      if ((error as { response?: { status: number } })?.response?.status === 401) {
-        logout();
-      }
-      setIsInitialized(false);
-    }
   });
 
-console.log(isFetching, isLoadingUserData)
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     const storedUser = localStorage.getItem("@User");
@@ -172,6 +170,7 @@ console.log(isFetching, isLoadingUserData)
         setIsLogged,
         logout,
         isAuthorized,
+        updateUserData,
       }}
     >
       {!isLoadingUserData && children}

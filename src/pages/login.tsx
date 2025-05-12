@@ -1,17 +1,23 @@
 import { LoginForm } from "@/components/Forms/LoginForm";
+import { useUserContext } from "@/contexts/UserContext";
 import api from "@/services/api";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateUserData } = useUserContext();
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    localStorage.clear();
+  }, [])
 
   const handleChangeForm = (event: ChangeEvent<HTMLInputElement>) => {
     setUser((prev) => ({
@@ -22,6 +28,7 @@ export const LoginPage = () => {
 
   const handleSubmitForm = async (e: FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await api.post("/auth/login", {
@@ -30,8 +37,19 @@ export const LoginPage = () => {
       });
 
       if (response.status === 200) {
+        // Store auth token
         localStorage.setItem("authToken", JSON.stringify(response.data.token));
 
+        // Store basic user data in @User
+        const basicUserData = {
+          id: response.data.id,
+          role: response.data.role,
+          email: response.data.email,
+        };
+
+        localStorage.setItem("@User", JSON.stringify(basicUserData));
+
+        // Fetch and store user details
         let userDetails;
         if (response.data.role === "RECRUITER") {
           const detailsRes = await api.get(`/recruiters/${response.data.id}`);
@@ -44,17 +62,18 @@ export const LoginPage = () => {
           userDetails = detailsRes.data;
         }
 
-        localStorage.setItem(
-          "@User",
-          JSON.stringify({
+        // Store complete user details in @UserDetails
+        if (userDetails) {
+          const completeUserData = {
             ...userDetails,
-            id: response.data.id,
-            role: response.data.role,
-            email: response.data.email,
-            token: response.data.token,
-          })
-        );
+            ...basicUserData,
+          };
+          localStorage.setItem("@UserDetails", JSON.stringify(completeUserData));
 
+          updateUserData(completeUserData);
+        }
+
+        // Navigate based on role
         if (response.data.role === "DEVELOPER") {
           navigate("/home");
         }
@@ -62,7 +81,7 @@ export const LoginPage = () => {
           navigate("/jobs/announces");
         }
         if (response.data.role === "ADMINISTRATOR") {
-          navigate(`/admin/recruiters/${userDetails.company?.id || userDetails.companyId}`);
+          navigate(`/admin/recruiters/${userDetails?.company?.id || userDetails?.companyId}`);
         }
       }
 
@@ -73,6 +92,9 @@ export const LoginPage = () => {
       } else {
         toast.error("An unexpected error occurred.");
       }
+      localStorage.clear();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,7 +108,7 @@ export const LoginPage = () => {
           alt="Stars Illustration"
         />
       </aside>
-      <aside className="flex flex-col h-3/4 w-1/2  justify-center items-center space-y-2">
+      <aside className="flex flex-col h-3/4 w-1/2 justify-center items-center space-y-2">
         <img
           src={"/findev-minimal-logo.svg"}
           width={60}
@@ -101,6 +123,7 @@ export const LoginPage = () => {
           user={user}
           onSubmit={handleSubmitForm}
           onChange={handleChangeForm}
+          isLoading={isLoading}
         />
       </aside>
     </main>
