@@ -41,11 +41,11 @@ export const Menu = () => {
   useEffect(() => {
     const storedUserDetails = localStorage.getItem("@UserDetails");
     const storedUser = localStorage.getItem("@User");
-    
+
     if (storedUserDetails) {
       setUserData(JSON.parse(storedUserDetails));
     }
-    
+
     if (storedUser) {
       setUserRole(JSON.parse(storedUser));
     }
@@ -55,17 +55,37 @@ export const Menu = () => {
     switch (role) {
       case "ADMINISTRATOR":
         return [
-          { label: "Vagas", path: `/admin/jobs/${userData?.company?.id}`, icon: <BriefcaseIcon className="w-5 h-5" /> },
-          { label: "Recrutadores", path: `/admin/recruiters/${userData?.company?.id}`, icon: <UsersIcon className="w-5 h-5" /> },
+          {
+            label: "Vagas",
+            path: `/admin/jobs/${userData?.company?.id}`,
+            icon: <BriefcaseIcon className="w-5 h-5" />,
+          },
+          {
+            label: "Recrutadores",
+            path: `/admin/recruiters/${userData?.company?.id}`,
+            icon: <UsersIcon className="w-5 h-5" />,
+          },
         ];
       case "DEVELOPER":
         return [
-          { label: "Início", path: "/home", icon: <HomeIcon className="w-5 h-5" /> },
-          { label: "Candidaturas", path: "/applications", icon: <ClipboardListIcon className="w-5 h-5" /> },
+          {
+            label: "Início",
+            path: "/home",
+            icon: <HomeIcon className="w-5 h-5" />,
+          },
+          {
+            label: "Candidaturas",
+            path: "/applications",
+            icon: <ClipboardListIcon className="w-5 h-5" />,
+          },
         ];
       case "RECRUITER":
         return [
-          { label: "Minhas Vagas", path: "/jobs/announces", icon: <BriefcaseIcon className="w-5 h-5" /> },
+          {
+            label: "Minhas Vagas",
+            path: "/jobs/announces",
+            icon: <BriefcaseIcon className="w-5 h-5" />,
+          },
         ];
       default:
         return [];
@@ -86,7 +106,12 @@ export const Menu = () => {
           {/* Left side - Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img src="/findev-medium-logo.svg" width={100} height={40} alt="Findev Logo" />
+              <img
+                src="/findev-medium-logo.svg"
+                width={100}
+                height={40}
+                alt="Findev Logo"
+              />
             </Link>
           </div>
 
@@ -142,8 +167,11 @@ export const Menu = () => {
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">
                       {userData?.firstName} {userData?.lastName}
+                      {!userData?.firstName && "Administrador"}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{userData?.email}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {userData?.email}
+                    </p>
                   </div>
                   <div className="py-1">
                     <Link
@@ -153,13 +181,13 @@ export const Menu = () => {
                       <UserIcon className="w-4 h-4 mr-3 text-gray-500" />
                       <span>Perfil</span>
                     </Link>
-                    <Link
+                    {/* <Link
                       to="/settings"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <SettingsIcon className="w-4 h-4 mr-3 text-gray-500" />
                       <span>Configurações</span>
-                    </Link>
+                    </Link> */}
                     <button
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

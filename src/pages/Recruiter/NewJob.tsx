@@ -27,7 +27,7 @@ type Priority = 0 | 1 | 2;
 const priorityOptions = {
   0: "Alta",
   1: "Média",
-  2: "Baixa"
+  2: "Baixa",
 } as const;
 
 interface JobFormData {
@@ -54,10 +54,12 @@ export function NewJob() {
   const navigate = useNavigate();
   const { userData } = useUserContext();
   const { register, handleSubmit, setValue } = useForm<JobFormData>();
-  const [selectedSkills, setSelectedSkills] = useState<Array<{
-    name: string;
-    experienceYears: number;
-  }>>([]);
+  const [selectedSkills, setSelectedSkills] = useState<
+    Array<{
+      name: string;
+      experienceYears: number;
+    }>
+  >([]);
   const [newSkill, setNewSkill] = useState("");
 
   const createJobMutation = useMutation({
@@ -65,8 +67,11 @@ export function NewJob() {
       if (!userData?.companyId || !userData?.recruiterId) {
         throw new Error("Dados do recrutador não encontrados");
       }
-      
-      if (typeof userData.companyId !== 'string' || typeof userData.recruiterId !== 'string') {
+
+      if (
+        typeof userData.companyId !== "string" ||
+        typeof userData.recruiterId !== "string"
+      ) {
         throw new Error("Dados do recrutador inválidos");
       }
 
@@ -90,29 +95,39 @@ export function NewJob() {
   const onSubmit = handleSubmit((data) => {
     const formData = {
       ...data,
-      requirements: selectedSkills
+      requirements: selectedSkills,
     };
     createJobMutation.mutate(formData);
   });
 
   const handleSkillAdd = () => {
-    if (newSkill && !selectedSkills.some(s => s.name === newSkill)) {
-      setSelectedSkills([...selectedSkills, {
-        name: newSkill,
-        experienceYears: 0
-      }]);
+    if (newSkill && !selectedSkills.some((s) => s.name === newSkill)) {
+      setSelectedSkills([
+        ...selectedSkills,
+        {
+          name: newSkill,
+          experienceYears: 0,
+        },
+      ]);
       setNewSkill("");
     }
   };
 
-  const handleSkillRemove = (skillToRemove: { name: string; experienceYears: number }) => {
-    setSelectedSkills(selectedSkills.filter((s) => s.name !== skillToRemove.name));
+  const handleSkillRemove = (skillToRemove: {
+    name: string;
+    experienceYears: number;
+  }) => {
+    setSelectedSkills(
+      selectedSkills.filter((s) => s.name !== skillToRemove.name)
+    );
   };
 
   const handleExperienceChange = (skillName: string, years: number) => {
-    setSelectedSkills(selectedSkills.map(skill => 
-      skill.name === skillName ? { ...skill, experienceYears: years } : skill
-    ));
+    setSelectedSkills(
+      selectedSkills.map((skill) =>
+        skill.name === skillName ? { ...skill, experienceYears: years } : skill
+      )
+    );
   };
 
   const [workModality, setWorkModality] = useState<{
@@ -125,17 +140,19 @@ export function NewJob() {
     onSite: false,
   });
 
-  const handleWorkModalityChange = (type: 'remote' | 'hybrid' | 'onSite', checked: boolean) => {
+  const handleWorkModalityChange = (
+    type: "remote" | "hybrid" | "onSite",
+    checked: boolean
+  ) => {
     if (checked) {
       setWorkModality({
-        remote: type === 'remote',
-        hybrid: type === 'hybrid',
-        onSite: type === 'onSite',
+        remote: type === "remote",
+        hybrid: type === "hybrid",
+        onSite: type === "onSite",
       });
-      setValue("workModality", 
-        type === 'remote' ? "REMOTE" : 
-        type === 'hybrid' ? "HYBRID" : 
-        "ON_SITE"
+      setValue(
+        "workModality",
+        type === "remote" ? "REMOTE" : type === "hybrid" ? "HYBRID" : "ON_SITE"
       );
     }
   };
@@ -149,8 +166,14 @@ export function NewJob() {
           <form onSubmit={onSubmit} className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Contrato</label>
-                <Select onValueChange={(value) => setValue("contractType", value as ContractType)}>
+                <label className="text-sm font-medium mb-1 block">
+                  Contrato
+                </label>
+                <Select
+                  onValueChange={(value) =>
+                    setValue("contractType", value as ContractType)
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Tipo de contrato" />
                   </SelectTrigger>
@@ -163,34 +186,54 @@ export function NewJob() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Título da Vaga</label>
-                <Input placeholder="Digite aqui o título da vaga..." {...register("title")} />
+                <label className="text-sm font-medium mb-1 block">
+                  Título da Vaga
+                </label>
+                <Input
+                  placeholder="Digite aqui o título da vaga..."
+                  {...register("title")}
+                />
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Prioridade de Contratação</label>
-                <Select onValueChange={(value) => setValue("priority", parseInt(value) as Priority)}>
+                <label className="text-sm font-medium mb-1 block">
+                  Prioridade de Contratação
+                </label>
+                <Select
+                  onValueChange={(value) =>
+                    setValue("priority", parseInt(value) as Priority)
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione a prioridade" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">
                       <span className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-red-100 text-red-800">
+                        <Badge
+                          variant="secondary"
+                          className="bg-red-100 text-red-800"
+                        >
                           {priorityOptions[0]}
                         </Badge>
                       </span>
                     </SelectItem>
                     <SelectItem value="1">
                       <span className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                        <Badge
+                          variant="secondary"
+                          className="bg-yellow-100 text-yellow-800"
+                        >
                           {priorityOptions[1]}
                         </Badge>
                       </span>
                     </SelectItem>
                     <SelectItem value="2">
                       <span className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-100 text-blue-800"
+                        >
                           {priorityOptions[2]}
                         </Badge>
                       </span>
@@ -201,8 +244,14 @@ export function NewJob() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Data Expiração</label>
-              <Input type="date" placeholder="DD/MM/YYYY" {...register("expirationDate")} />
+              <label className="text-sm font-medium mb-1 block">
+                Data Expiração
+              </label>
+              <Input
+                type="date"
+                placeholder="DD/MM/YYYY"
+                {...register("expirationDate")}
+              />
             </div>
 
             <div className="space-y-4">
@@ -212,12 +261,16 @@ export function NewJob() {
                     <Globe2 className="h-5 w-5 text-gray-500" />
                     <div>
                       <h3 className="font-medium">Remoto</h3>
-                      <p className="text-sm text-gray-500">Candidatos podem trabalhar de qualquer lugar.</p>
+                      <p className="text-sm text-gray-500">
+                        Candidatos podem trabalhar de qualquer lugar.
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={workModality.remote}
-                    onCheckedChange={(checked) => handleWorkModalityChange('remote', checked)}
+                    onCheckedChange={(checked) =>
+                      handleWorkModalityChange("remote", checked)
+                    }
                   />
                 </div>
               </div>
@@ -228,12 +281,16 @@ export function NewJob() {
                     <SignalHigh className="h-5 w-5 text-gray-500" />
                     <div>
                       <h3 className="font-medium">Híbrido</h3>
-                      <p className="text-sm text-gray-500">Candidatos trabalham parcialmente remoto e presencial.</p>
+                      <p className="text-sm text-gray-500">
+                        Candidatos trabalham parcialmente remoto e presencial.
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={workModality.hybrid}
-                    onCheckedChange={(checked) => handleWorkModalityChange('hybrid', checked)}
+                    onCheckedChange={(checked) =>
+                      handleWorkModalityChange("hybrid", checked)
+                    }
                   />
                 </div>
               </div>
@@ -244,12 +301,16 @@ export function NewJob() {
                     <Building2 className="h-5 w-5 text-gray-500" />
                     <div>
                       <h3 className="font-medium">Presencial</h3>
-                      <p className="text-sm text-gray-500">Candidatos precisam ir até o escritório diariamente.</p>
+                      <p className="text-sm text-gray-500">
+                        Candidatos precisam ir até o escritório diariamente.
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={workModality.onSite}
-                    onCheckedChange={(checked) => handleWorkModalityChange('onSite', checked)}
+                    onCheckedChange={(checked) =>
+                      handleWorkModalityChange("onSite", checked)
+                    }
                   />
                 </div>
               </div>
@@ -257,7 +318,9 @@ export function NewJob() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Salário (Min-Max)</label>
+                <label className="text-sm font-medium mb-1 block">
+                  Salário
+                </label>
                 <div className="flex items-center">
                   <Input
                     type="number"
@@ -273,20 +336,37 @@ export function NewJob() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Horas Semanais</label>
-                  <Input type="number" placeholder="Min." {...register("minWeekHours")} />
+                  <label className="text-sm font-medium mb-1 block">
+                    Horas Semanais
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="Min."
+                    {...register("minWeekHours")}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">&nbsp;</label>
-                  <Input type="number" placeholder="Max." {...register("maxWeekHours")} />
+                  <label className="text-sm font-medium mb-1 block">
+                    &nbsp;
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="Max."
+                    {...register("maxWeekHours")}
+                  />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Localização</label>
+              <label className="text-sm font-medium mb-1 block">
+                Localização
+              </label>
               <div className="flex gap-2">
-                <Input {...register("workLocation")} placeholder="Ex: Franca, São Paulo" />
+                <Input
+                  {...register("workLocation")}
+                  placeholder="Ex: Franca, São Paulo"
+                />
                 <Button variant="outline" type="button">
                   Adicionar localização
                 </Button>
@@ -294,10 +374,15 @@ export function NewJob() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Requisitos / Tempo de Experiência</label>
+              <label className="text-sm font-medium mb-1 block">
+                Requisitos / Tempo de Experiência
+              </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {selectedSkills.map((skill) => (
-                  <div key={skill.name} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                  <div
+                    key={skill.name}
+                    className="flex items-center gap-2 bg-gray-50 rounded-lg p-2"
+                  >
                     <Badge variant="secondary" className="py-1 px-2">
                       {skill.name}
                     </Badge>
@@ -306,7 +391,12 @@ export function NewJob() {
                         type="number"
                         min="0"
                         value={skill.experienceYears}
-                        onChange={(e) => handleExperienceChange(skill.name, parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleExperienceChange(
+                            skill.name,
+                            parseInt(e.target.value) || 0
+                          )
+                        }
                         className="w-20 h-8"
                         placeholder="Anos"
                       />
@@ -333,7 +423,9 @@ export function NewJob() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Descrição</label>
+              <label className="text-sm font-medium mb-1 block">
+                Descrição
+              </label>
               <Textarea
                 {...register("description")}
                 placeholder="Descreva os detalhes da vaga..."
@@ -342,8 +434,8 @@ export function NewJob() {
             </div>
 
             <div className="flex justify-end">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full"
                 disabled={createJobMutation.isPending}
               >
@@ -355,4 +447,4 @@ export function NewJob() {
       </div>
     </DefaultLayout>
   );
-} 
+}

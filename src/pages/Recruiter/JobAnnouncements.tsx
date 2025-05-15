@@ -1,11 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Loader2, PenSquare, Users, Trash2, Clock } from 'lucide-react';
-import { DefaultLayout } from '@/layouts/DefaultLayout';
-import { Menu } from '@/components/Menu/Menu';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Loader2,
+  PenSquare,
+  Users,
+  Trash2,
+  Clock,
+  Plus,
+  X,
+} from "lucide-react";
+import { DefaultLayout } from "@/layouts/DefaultLayout";
+import { Menu } from "@/components/Menu/Menu";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -14,13 +22,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUserContext } from '@/contexts/UserContext';
-import { formatCurrency } from '@/utils/format';
-
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserContext } from "@/contexts/UserContext";
+import { formatCurrency } from "@/utils/format";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -28,26 +35,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useForm } from 'react-hook-form';
-import { ContractType, Job, jobApi, WorkModality } from '@/services/job';
+import { useForm, useFieldArray } from "react-hook-form";
+import { ContractType, Job, jobApi, WorkModality } from "@/services/job";
 
 const workModalityColors: Record<WorkModality, string> = {
-  REMOTE: 'bg-purple-100 text-purple-800 hover:bg-purple-200',
-  HYBRID: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  ON_SITE: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
+  REMOTE: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+  HYBRID: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+  ON_SITE: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
 } as const;
 
 const contractTypeColors: Record<ContractType, string> = {
-  CLT: 'bg-teal-100 text-teal-800',
-  PJ: 'bg-orange-100 text-orange-800',
-  FREELANCER: 'bg-violet-100 text-violet-800',
+  CLT: "bg-teal-100 text-teal-800",
+  PJ: "bg-orange-100 text-orange-800",
+  FREELANCER: "bg-violet-100 text-violet-800",
 } as const;
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('pt-BR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return new Date(date).toLocaleDateString("pt-BR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -61,6 +68,10 @@ interface JobFormData {
   minWeekHours: number;
   maxWeekHours: number;
   expirationDate: string;
+  requirements: {
+    name: string;
+    experienceYears: number;
+  }[];
 }
 
 export function JobAnnouncements() {
@@ -68,57 +79,64 @@ export function JobAnnouncements() {
   const navigate = useNavigate();
   const { userData, simpleUserJson, isAuthorized } = useUserContext();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const { register, handleSubmit, reset, setValue } = useForm<JobFormData>();
+
+  const { register, handleSubmit, reset, setValue, control, watch } =
+    useForm<JobFormData>({
+      defaultValues: {
+        requirements: [],
+      },
+    });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "requirements",
+  });
 
   useEffect(() => {
     if (!isAuthorized(["RECRUITER", "ADMINISTRATOR"])) {
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthorized, navigate]);
 
   const { data: jobs, isLoading } = useQuery({
-    queryKey: ['recruiter-jobs', userData?.recruiterId],
+    queryKey: ["recruiter-jobs", userData?.recruiterId],
     queryFn: () => jobApi.getRecruiterJobs(userData!.recruiterId),
     enabled: !!userData?.recruiterId,
   });
 
   const { data: selectedJob, isLoading: isLoadingJobDetails } = useQuery({
-    queryKey: ['job-details', selectedJobId],
+    queryKey: ["job-details", selectedJobId],
     queryFn: () => jobApi.getJobDetails(selectedJobId!),
-    enabled: !!selectedJobId
+    enabled: !!selectedJobId,
   });
 
   useEffect(() => {
     if (selectedJob) {
-      Object.entries(selectedJob).forEach(([key, value]) => {
-        if (key in selectedJob) {
-          setValue(key as keyof JobFormData, value);
-        }
-      });
+      reset(selectedJob);
     }
-  }, [selectedJob, setValue]);
+  }, [selectedJob, reset]);
 
   const updateJobMutation = useMutation({
     mutationFn: (data: JobFormData) => jobApi.updateJob(selectedJobId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recruiter-jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['job-details'] });
-      toast.success('Vaga atualizada com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["recruiter-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["job-details"] });
+      toast.success("Vaga atualizada com sucesso");
       setSelectedJobId(null);
     },
     onError: () => {
-      toast.error('Erro ao atualizar vaga');
+      toast.error("Erro ao atualizar vaga");
     },
   });
 
   const deleteJobMutation = useMutation({
     mutationFn: (jobId: string) => jobApi.deleteJob(jobId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recruiter-jobs'] });
-      toast.success('Vaga removida com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["recruiter-jobs"] });
+      toast.success("Vaga removida com sucesso");
     },
     onError: () => {
-      toast.error('Erro ao remover vaga');
+      toast.error("Erro ao remover vaga");
     },
   });
 
@@ -126,7 +144,11 @@ export function JobAnnouncements() {
     updateJobMutation.mutate(data);
   };
 
-  if (!simpleUserJson || (simpleUserJson.role !== 'RECRUITER' && simpleUserJson.role !== 'ADMINISTRATOR')) {
+  if (
+    !simpleUserJson ||
+    (simpleUserJson.role !== "RECRUITER" &&
+      simpleUserJson.role !== "ADMINISTRATOR")
+  ) {
     return null;
   }
 
@@ -144,53 +166,60 @@ export function JobAnnouncements() {
     <DefaultLayout leftSideBar={<Menu />}>
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">Minhas Vagas Anunciadas</h1>
-          <Button onClick={() => navigate('/jobs/new')}>
-            Nova Vaga
-          </Button>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Minhas Vagas Anunciadas
+          </h1>
+          <Button onClick={() => navigate("/jobs/new")}>Nova Vaga</Button>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-4">
           {jobs?.content.map((job: Job) => (
-            <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow">
+            <Card
+              key={job.id}
+              className="overflow-hidden hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4">
                 <div className="flex flex-col space-y-4">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{job.workLocation}</p>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {job.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {job.workLocation}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Badge 
-                      variant="secondary"
-                      className={workModalityColors[job.workModality]}
-                    >
-                      {job.workModality === 'REMOTE' ? 'Remoto' : 
-                       job.workModality === 'HYBRID' ? 'Híbrido' : 'Presencial'}
+                    <Badge className={workModalityColors[job.workModality]}>
+                      {job.workModality === "REMOTE"
+                        ? "Remoto"
+                        : job.workModality === "HYBRID"
+                        ? "Híbrido"
+                        : "Presencial"}
                     </Badge>
-                    <Badge 
-                      variant="secondary"
-                      className={contractTypeColors[job.contractType]}
-                    >
+                    <Badge className={contractTypeColors[job.contractType]}>
                       {job.contractType}
                     </Badge>
-                    <Badge 
-                      variant="secondary"
-                      className="bg-emerald-100 text-emerald-800"
-                    >
+                    <Badge className="bg-emerald-100 text-emerald-800">
                       {formatCurrency(job.salary)}
                     </Badge>
                   </div>
 
                   <div className="flex items-center text-sm text-gray-500">
                     <Clock className="h-4 w-4 mr-1" />
-                    <span>Aceita candidatos até: {formatDate(job.expirationDate)}</span>
+                    <span>
+                      Aceita candidatos até: {formatDate(job.expirationDate)}
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {job.requirements.map(requirement => (
-                      <Badge key={requirement.name} variant="secondary" className="bg-gray-100 text-gray-800">
-                        {requirement.name} - {requirement.experienceYears} anos
+                    {job.requirements.map((requirement) => (
+                      <Badge
+                        key={requirement.name}
+                        className="bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      >
+                        {requirement.name} - {requirement.experienceYears}{" "}
+                        {requirement.experienceYears === 1 ? "ano" : "anos"}
                       </Badge>
                     ))}
                   </div>
@@ -201,7 +230,6 @@ export function JobAnnouncements() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-blue-600"
                     onClick={() => setSelectedJobId(job.id)}
                   >
                     <PenSquare className="h-4 w-4" />
@@ -210,16 +238,16 @@ export function JobAnnouncements() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-purple-600"
                     onClick={() => navigate(`/jobs/${job.id}/candidates`)}
                   >
                     <Users className="h-4 w-4" />
-                    <span className="ml-2">Candidatos ({job.candidatures?.length})</span>
+                    <span className="ml-2">
+                      Candidatos ({job.candidatures?.length})
+                    </span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-red-600"
                     onClick={() => deleteJobMutation.mutate(job.id)}
                     disabled={deleteJobMutation.isPending}
                   >
@@ -236,8 +264,8 @@ export function JobAnnouncements() {
           ))}
         </div>
 
-        <Dialog 
-          open={!!selectedJobId} 
+        <Dialog
+          open={!!selectedJobId}
           onOpenChange={(open) => {
             if (!open) {
               setSelectedJobId(null);
@@ -245,7 +273,7 @@ export function JobAnnouncements() {
             }
           }}
         >
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Vaga</DialogTitle>
               <DialogDescription>
@@ -262,24 +290,26 @@ export function JobAnnouncements() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium">Título</label>
-                    <Input {...register('title')} />
+                    <Input {...register("title")} />
                   </div>
 
                   <div>
                     <label className="text-sm font-medium">Descrição</label>
-                    <Textarea {...register('description')} />
+                    <Textarea {...register("description")} />
                   </div>
 
                   <div>
                     <label className="text-sm font-medium">Localização</label>
-                    <Input {...register('workLocation')} />
+                    <Input {...register("workLocation")} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium">Modalidade</label>
-                      <Select 
-                        onValueChange={(value) => setValue('workModality', value as WorkModality)}
+                      <Select
+                        onValueChange={(value) =>
+                          setValue("workModality", value as WorkModality)
+                        }
                         defaultValue={selectedJob.workModality}
                       >
                         <SelectTrigger>
@@ -294,9 +324,13 @@ export function JobAnnouncements() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium">Tipo de Contrato</label>
-                      <Select 
-                        onValueChange={(value) => setValue('contractType', value as ContractType)}
+                      <label className="text-sm font-medium">
+                        Tipo de Contrato
+                      </label>
+                      <Select
+                        onValueChange={(value) =>
+                          setValue("contractType", value as ContractType)
+                        }
                         defaultValue={selectedJob.contractType}
                       >
                         <SelectTrigger>
@@ -313,23 +347,66 @@ export function JobAnnouncements() {
 
                   <div>
                     <label className="text-sm font-medium">Salário</label>
-                    <Input type="number" {...register('salary')} />
+                    <Input type="number" {...register("salary")} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">Horas Semanais (Mín.)</label>
-                      <Input type="number" {...register('minWeekHours')} />
+                      <label className="text-sm font-medium">
+                        Horas Semanais (Mín.)
+                      </label>
+                      <Input type="number" {...register("minWeekHours")} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Horas Semanais (Máx.)</label>
-                      <Input type="number" {...register('maxWeekHours')} />
+                      <label className="text-sm font-medium">
+                        Horas Semanais (Máx.)
+                      </label>
+                      <Input type="number" {...register("maxWeekHours")} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">Data de Expiração</label>
-                    <Input type="date" {...register('expirationDate')} />
+                    <label className="text-sm font-medium">
+                      Data de Expiração
+                    </label>
+                    <Input type="date" {...register("expirationDate")} />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">
+                      Requisitos (nome/anos de experiencia)
+                    </label>
+                    {fields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex gap-2 mb-2 items-center"
+                      >
+                        <Input
+                          placeholder="Requisito"
+                          {...register(`requirements.${index}.name`)}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Anos"
+                          {...register(`requirements.${index}.experienceYears`)}
+                          className="w-24"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => remove(index)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => append({ name: "", experienceYears: 0 })}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Adicionar Requisito
+                    </Button>
                   </div>
                 </div>
 
@@ -344,17 +421,14 @@ export function JobAnnouncements() {
                   >
                     Cancelar
                   </Button>
-                  <Button 
-                    type="submit"
-                    disabled={updateJobMutation.isPending}
-                  >
+                  <Button type="submit" disabled={updateJobMutation.isPending}>
                     {updateJobMutation.isPending ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
                         Salvando...
                       </>
                     ) : (
-                      'Salvar Alterações'
+                      "Salvar Alterações"
                     )}
                   </Button>
                 </DialogFooter>
@@ -365,4 +439,4 @@ export function JobAnnouncements() {
       </div>
     </DefaultLayout>
   );
-} 
+}

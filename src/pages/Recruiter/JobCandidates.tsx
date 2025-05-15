@@ -247,7 +247,7 @@ export function JobCandidates() {
                     <div className="flex flex-wrap gap-2">
                       {selectedCandidate.developer.skills.map((skill) => (
                         <Badge key={skill.skillId} variant="secondary">
-                          {skill.skillName} ({skill.experienceYears} anos)
+                          {skill.skillName} ({skill.experienceYears} {skill.experienceYears === 1 ? "ano" : "anos"})
                         </Badge>
                       ))}
                     </div>

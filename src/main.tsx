@@ -10,7 +10,7 @@ import { UserContextProvider } from "@/contexts/UserContext";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ReactQueryProvider>
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="bottom-right" />
       <UserContextProvider>
         <RouterProvider router={router} />
       </UserContextProvider>

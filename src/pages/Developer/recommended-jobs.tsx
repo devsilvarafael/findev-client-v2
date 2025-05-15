@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import JobCardItem from "@/components/Jobs/JobCardItem";
 import { JobDetailsPanel } from "@/pages/Developer/components/job-details-panel";
 
-
 export const RecommendedJobs = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
@@ -38,9 +37,16 @@ export const RecommendedJobs = () => {
 
         <div className="flex gap-6">
           <div className="w-1/2 bg-white p-2 rounded-md shadow-sm h-full">
+            {userJobs?.content.length === 0 && (
+              <div className="border rounded-lg p-6 h-fit flex items-center justify-center bg-gray-50">
+                <p className="text-gray-500">
+                  Nenhuma vaga recomendada encontrada
+                </p>
+              </div>
+            )}
             {userJobs?.content.map((job: Job) => (
-              <div 
-                key={job.id} 
+              <div
+                key={job.id}
                 className={`my-2 border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${
                   selectedJob?.id === job.id ? "border-blue-500 bg-blue-50" : ""
                 }`}
@@ -55,8 +61,10 @@ export const RecommendedJobs = () => {
             {selectedJob ? (
               <JobDetailsPanel job={selectedJob} />
             ) : (
-              <div className="border rounded-lg p-6 h-full flex items-center justify-center bg-gray-50">
-                <p className="text-gray-500">Selecione uma vaga para ver os detalhes</p>
+              <div className="border rounded-lg p-6 h-fit flex items-center justify-center bg-gray-50">
+                <p className="text-gray-500">
+                  Selecione uma vaga para ver os detalhes
+                </p>
               </div>
             )}
           </div>
