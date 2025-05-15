@@ -90,7 +90,7 @@ export function DeveloperCandidatures() {
 
   const { data: candidatures, isLoading, error } = useQuery({
     queryKey: ['candidatures', userData?.developerId],
-    queryFn: () => candidatureApi.getDeveloperCandidatures(userData!.developerId),
+    queryFn: () => candidatureApi.getDeveloperCandidatures(userData!.developerId as string),
     enabled: !!userData?.developerId,
   });
 
@@ -102,7 +102,7 @@ export function DeveloperCandidatures() {
 
   const unapplyMutation = useMutation({
     mutationFn: ({ jobId }: { jobId: string }) => 
-      candidatureApi.unapplyFromJob(jobId, userData!.developerId),
+      candidatureApi.unapplyFromJob(jobId, userData!.developerId as string),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['candidatures'] });
       toast.info("Candidatura retirada com sucesso.");
