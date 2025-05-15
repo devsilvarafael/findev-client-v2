@@ -130,7 +130,7 @@ export function JobAnnouncements() {
     return null;
   }
 
-  if (isLoading || !userData) {
+  if (isLoading) {
     return (
       <DefaultLayout leftSideBar={<Menu />}>
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -186,6 +186,14 @@ export function JobAnnouncements() {
                     <Clock className="h-4 w-4 mr-1" />
                     <span>Aceita candidatos até: {formatDate(job.expirationDate)}</span>
                   </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {job.requirements.map(requirement => (
+                      <Badge key={requirement.name} variant="secondary" className="bg-gray-100 text-gray-800">
+                        {requirement.name} - {requirement.experienceYears} anos
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="bg-gray-50 p-4">
@@ -206,7 +214,7 @@ export function JobAnnouncements() {
                     onClick={() => navigate(`/jobs/${job.id}/candidates`)}
                   >
                     <Users className="h-4 w-4" />
-                    <span className="ml-2">Candidatos</span>
+                    <span className="ml-2">Candidatos ({job.candidatures?.length})</span>
                   </Button>
                   <Button
                     variant="ghost"

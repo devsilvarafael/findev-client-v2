@@ -87,6 +87,11 @@ export const LoginPage = () => {
 
       return response.data;
     } catch (err: unknown) {
+      console.log(err.response)
+      if (err.response.status === 401) {
+        toast.error(err.response.data)
+        return
+      }
       if (err instanceof Error && err.message) {
         toast.error(err.message);
       } else {

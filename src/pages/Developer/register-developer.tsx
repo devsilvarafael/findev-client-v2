@@ -6,11 +6,9 @@ import { CurrentFormProvider } from "@/contexts/CurrentFormContext";
 import { RegisterLayout } from "@/layouts/RegisterLayout";
 import { developerFields } from "@/pages/Developer/developerFields";
 import api from "@/services/api";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const RegisterDeveloper = () => {
-  const router = useNavigate();
 
   const submitDeveloperData = async (data: any) => {
     try {
@@ -31,8 +29,11 @@ export const RegisterDeveloper = () => {
 
       if (response.status === 201) {
         toast.success("Cadastro realizado com sucesso");
-        router("/");
       }
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
     } catch (error) {
       console.error(error);
       toast.error("Erro ao realizar cadastro");

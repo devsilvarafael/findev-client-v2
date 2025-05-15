@@ -132,6 +132,7 @@ export const Menu = () => {
                 </Avatar>
                 <span className="text-sm font-medium text-gray-700">
                   {userData?.firstName} {userData?.lastName}
+                  {!userData?.firstName && "Administrador"}
                 </span>
                 <ChevronDownIcon className="w-4 h-4 text-gray-600" />
               </button>

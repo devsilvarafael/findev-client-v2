@@ -12,6 +12,7 @@ import { CompanyRecruiters } from "@/pages/Admin/CompanyRecruiters";
 import { CompanyJobs } from "@/pages/Admin/CompanyJobs";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import JobCandidatesKanbanPage from '@/pages/Admin/JobCandidatesKanbanPage';
+import { RecruiterRegister } from "@/pages/Recruiter/RecruiterRegister";
 
 export const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
   {
     path: "/register/developer",
     element: <RegisterDeveloper />
+  },
+  {
+    path: "/register/recruiter",
+    element: <RecruiterRegister />
   },
   {
     path: "/applications",

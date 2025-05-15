@@ -19,6 +19,7 @@ export interface Job {
   priority: number;
   companyId: string;
   recruiterId: string;
+  candidatures?: [];
   requirements: Array<{
     name: string;
     experienceYears: number;
